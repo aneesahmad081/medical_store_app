@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1095879858346",
+    "project_id": "medical-store-app-13a49",
+    "storage_bucket": "medical-store-app-13a49.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1095879858346:android:6d5cd47242c38bf31f58d3",
+        "android_client_info": {
+          "package_name": "com.example.medical_store_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBH9hdtqVxOkJGrVARLS6dFrRJ4pOiFqLo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
