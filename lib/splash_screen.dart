@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'View/login_screen.dart';
+import 'View/aut/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,6 +26,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.blueAccent,
       body: Stack(
@@ -35,11 +38,11 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 40,
+                radius: 50,
                 backgroundColor: Colors.white,
                 child: Image.asset('assets/Logo/Vector.png'),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: height * 0.05),
               Text(
                 'Anees Medical Store',
                 style: GoogleFonts.abel(
@@ -48,6 +51,8 @@ class _SplashScreenState extends State<SplashScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              SizedBox(height: height * 0.06),
+              const SpinKitCircle(color: Colors.white, size: 40),
             ],
           ),
         ],
