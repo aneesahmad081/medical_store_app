@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -9,6 +11,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final user = FirebaseAuth.instance.currentUser;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Hi, Anees',
+                                  'Hi, ${user?.displayName ?? "User"}',
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -69,13 +73,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         Row(
-                          children: [
+                          children: const [
                             Icon(
                               Icons.notifications_none,
                               color: Colors.white,
                               size: 24,
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             Icon(
                               Icons.mail_outline,
                               color: Colors.white,
@@ -107,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 20),
 
-              // Top Categories
+              // Top Categories from Firestore
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
@@ -121,16 +125,28 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               SizedBox(
                 height: 90,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    categoryItem('Dental', Colors.pink.shade100),
-                    categoryItem('Wellness', Colors.green.shade100),
-                    categoryItem('Homeo', Colors.orange.shade100),
-                    categoryItem('Eye care', Colors.blue.shade100),
-                    categoryItem('Eye care', Colors.blue.shade100),
-                  ],
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('categories')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final docs = snapshot.data!.docs;
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: docs.length,
+                      itemBuilder: (context, index) {
+                        final data = docs[index].data() as Map<String, dynamic>;
+                        return categoryItem(
+                          data['name'],
+                          Color(int.parse(data['color'])),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
 
@@ -170,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 20),
 
-              // Deals of the Day
+              // Deals of the Day from Firestore
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
@@ -196,18 +212,36 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: 4,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.75,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemBuilder: (context, index) {
-                    return productItem();
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('products')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final docs = snapshot.data!.docs;
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: docs.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.75,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
+                      itemBuilder: (context, index) {
+                        final data = docs[index].data() as Map<String, dynamic>;
+                        return productItem(
+                          data['name'],
+                          data['price'],
+                          data['image'],
+                          data['rating'],
+                        );
+                      },
+                    );
                   },
                 ),
               ),
@@ -246,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget productItem() {
+  Widget productItem(String name, int price, String imageUrl, double rating) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -261,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 top: Radius.circular(16),
               ),
               child: Image.network(
-                'https://via.placeholder.com/150',
+                imageUrl,
                 fit: BoxFit.cover,
                 width: double.infinity,
               ),
@@ -272,13 +306,10 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Accu-check Active\nTest Strip',
-                  style: GoogleFonts.poppins(fontSize: 12),
-                ),
+                Text(name, style: GoogleFonts.poppins(fontSize: 12)),
                 const SizedBox(height: 4),
                 Text(
-                  'Rs.112',
+                  'Rs.$price',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -288,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   children: [
                     const Icon(Icons.star, color: Colors.orange, size: 16),
-                    Text(' 2', style: GoogleFonts.poppins(fontSize: 12)),
+                    Text(' $rating', style: GoogleFonts.poppins(fontSize: 12)),
                   ],
                 ),
               ],
