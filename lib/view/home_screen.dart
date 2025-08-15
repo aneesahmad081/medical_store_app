@@ -318,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.star, color: Colors.orange, size: 16),
+                    const Icon(Icons.star, color: Colors.orange, size: 15),
                     Text(' $rating', style: GoogleFonts.poppins(fontSize: 12)),
                   ],
                 ),
