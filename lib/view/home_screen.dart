@@ -140,9 +140,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: docs.length,
                       itemBuilder: (context, index) {
                         final data = docs[index].data() as Map<String, dynamic>;
+                        Color categoryColor = Colors.blue;
+                        try {
+                          // parse color safely
+                          String colorString = data['color'];
+                          if (colorString.startsWith('#')) {
+                            categoryColor = Color(
+                              int.parse('0xFF${colorString.substring(1)}'),
+                            );
+                          } else {
+                            categoryColor = Color(int.parse(colorString));
+                          }
+                        } catch (_) {}
                         return categoryItem(
-                          data['name'],
-                          Color(int.parse(data['color'])),
+                          data['name'] ?? "Category",
+                          categoryColor,
                         );
                       },
                     );
@@ -234,12 +246,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                       itemBuilder: (context, index) {
                         final data = docs[index].data() as Map<String, dynamic>;
-                        return productItem(
-                          data['name'],
-                          data['price'],
-                          data['image'],
-                          data['rating'],
-                        );
+                        final name = data['name'] ?? "Product";
+                        final price = (data['price'] ?? 0) as int;
+                        final rating = (data['rating'] ?? 0.0).toDouble();
+                        final imageUrl =
+                            data['image'] ?? 'https://via.placeholder.com/150';
+                        return productItem(name, price, imageUrl, rating);
                       },
                     );
                   },
@@ -298,6 +310,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 imageUrl,
                 fit: BoxFit.cover,
                 width: double.infinity,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(
+                    child: Icon(
+                      Icons.broken_image,
+                      size: 50,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
               ),
             ),
           ),
