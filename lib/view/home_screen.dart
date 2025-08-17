@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:medical_store_app/View/ProductDetailsScreen.dart'
+    show ProductDetailsScreen;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -62,10 +64,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 Text(
-                                  'Welcome to Anees Medical Store',
+                                  user?.email ?? "No Email",
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: Colors.white70,
+                                  ),
+                                ),
+                                Text(
+                                  'Welcome to Anees Medical Store',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ],
@@ -142,7 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         final data = docs[index].data() as Map<String, dynamic>;
                         Color categoryColor = Colors.blue;
                         try {
-                          // parse color safely
                           String colorString = data['color'];
                           if (colorString.startsWith('#')) {
                             categoryColor = Color(
@@ -247,11 +255,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) {
                         final data = docs[index].data() as Map<String, dynamic>;
                         final name = data['name'] ?? "Product";
-                        final price = (data['price'] ?? 0) as int;
-                        final rating = (data['rating'] ?? 0.0).toDouble();
+                        final price = (data['price'] ?? 0)
+                            .toDouble(); // ✅ double
+                        final rating = (data['rating'] ?? 0.0)
+                            .toDouble(); // ✅ double
                         final imageUrl =
                             data['image'] ?? 'https://via.placeholder.com/150';
-                        return productItem(name, price, imageUrl, rating);
+                        final stock = (data['stock'] ?? 0) as int;
+
+                        return productItem(
+                          name,
+                          price,
+                          imageUrl,
+                          rating,
+                          stock,
+                          data, // 👈 pass full product data
+                        );
                       },
                     );
                   },
@@ -292,65 +311,110 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget productItem(String name, int price, String imageUrl, double rating) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
+  Widget productItem(
+    String name,
+    double price,
+    String imageUrl,
+    double rating,
+    int stock,
+    Map<String, dynamic> data, // ✅ new param
+  ) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailsScreen(
+              name: name,
+              price: (data['price'] is int)
+                  ? (data['price'] as int).toDouble()
+                  : (data['price'] ?? 0.0).toDouble(),
+              imageUrl: imageUrl,
+              rating: rating,
+              stock: stock,
+              description: data['description'] ?? "No description",
+              brand: data['brand'] ?? "Unknown",
+              expiryDate: data['expiryDate'] != null
+                  ? (data['expiryDate'] as Timestamp).toDate().toString().split(
+                      " ",
+                    )[0] // yyyy-MM-dd
+                  : "N/A",
+              userEmail: FirebaseAuth.instance.currentUser?.email ?? "Unknown",
+            ),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        size: 50,
+                        color: Colors.grey,
+                      ),
+                    );
+                  },
+                ),
               ),
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return const Center(child: CircularProgressIndicator());
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(
-                    child: Icon(
-                      Icons.broken_image,
-                      size: 50,
-                      color: Colors.grey,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name, style: GoogleFonts.poppins(fontSize: 12)),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Rs.$price',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.orange, size: 15),
+                      Text(
+                        ' $rating',
+                        style: GoogleFonts.poppins(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Stock: $stock available',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.green,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: GoogleFonts.poppins(fontSize: 12)),
-                const SizedBox(height: 4),
-                Text(
-                  'Rs.$price',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.orange, size: 15),
-                    Text(' $rating', style: GoogleFonts.poppins(fontSize: 12)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
