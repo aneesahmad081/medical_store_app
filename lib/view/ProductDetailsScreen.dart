@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medical_store_app/View/checkout_screen.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final String name;
@@ -90,7 +91,12 @@ class ProductDetailsScreen extends StatelessWidget {
                 ),
                 const Spacer(),
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CheckoutScreen()),
+                    );
+                  },
                   icon: const Icon(Icons.add_shopping_cart),
                   label: const Text("Add to cart"),
                   style: ElevatedButton.styleFrom(
