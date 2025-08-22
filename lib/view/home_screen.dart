@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_store_app/View/ProductDetailsScreen.dart'
     show ProductDetailsScreen;
+import 'package:medical_store_app/view/ProductDetailsScreen.dart'
+    hide ProductDetailsScreen;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -269,7 +271,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           imageUrl,
                           rating,
                           stock,
-                          data, // 👈 pass full product data
+                          data,
+                          docs[index].id,
                         );
                       },
                     );
@@ -317,7 +320,8 @@ class _HomeScreenState extends State<HomeScreen> {
     String imageUrl,
     double rating,
     int stock,
-    Map<String, dynamic> data, // ✅ new param
+    Map<String, dynamic> data,
+    String productId,
   ) {
     return GestureDetector(
       onTap: () {
@@ -325,6 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => ProductDetailsScreen(
+              productId: productId,
               name: name,
               price: (data['price'] is int)
                   ? (data['price'] as int).toDouble()
