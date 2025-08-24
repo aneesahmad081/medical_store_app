@@ -79,7 +79,7 @@ class ProductDetailsScreen extends StatelessWidget {
         final product = snapshot.data!.data() as Map<String, dynamic>;
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.indigo,
           appBar: AppBar(
             elevation: 0,
             backgroundColor: Colors.white,
