@@ -79,7 +79,7 @@ class ProductDetailsScreen extends StatelessWidget {
         final product = snapshot.data!.data() as Map<String, dynamic>;
 
         return Scaffold(
-          backgroundColor: Colors.indigo,
+          backgroundColor: Colors.white,
           appBar: AppBar(
             elevation: 0,
             backgroundColor: Colors.white,
@@ -161,7 +161,7 @@ class ProductDetailsScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CartScreen(context, product),
+                            builder: (context) => CartScreen(product: product),
                           ),
                         );
                       },

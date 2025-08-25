@@ -3,11 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_store_app/View/checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
-  const CartScreen(
-    BuildContext context,
-    Map<String, dynamic> product, {
-    super.key,
-  });
+  final Map<String, dynamic>? product; // ✅ make product optional
+
+  const CartScreen({super.key, this.product});
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -24,13 +22,12 @@ class _CartScreenState extends State<CartScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Row(
           children: [
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-            ),
             Text(
               "Your cart",
               style: GoogleFonts.poppins(
@@ -66,18 +63,20 @@ class _CartScreenState extends State<CartScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Cart Items
+            // ✅ First Cart Item (from product if available, otherwise default)
             cartItem(
-              "https://i.ibb.co/4PN9d6D/bottle.png", // replace with your image
-              "Sugar free gold",
+              widget.product?["image"] ?? "https://i.ibb.co/4PN9d6D/bottle.png",
+              widget.product?["name"] ?? "Sugar free gold",
               "bottle of 500 pellets",
-              25,
+              (widget.product?["price"] ?? 25).toDouble(),
               quantity1,
               () => setState(() => quantity1--),
               () => setState(() => quantity1++),
             ),
+
+            // ✅ Second dummy item
             cartItem(
-              "https://i.ibb.co/pKT9jbf/medicine.png", // replace with your image
+              "https://i.ibb.co/pKT9jbf/medicine.png",
               "Sugar free gold",
               "bottle of 500 pellets",
               18,
@@ -122,7 +121,9 @@ class _CartScreenState extends State<CartScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CheckoutScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const CheckoutScreen(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
