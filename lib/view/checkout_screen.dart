@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:medical_store_app/View/succes_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -81,10 +82,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               _paymentCard("JazzCash"),
               _paymentCard("Cash on Delivery"),
 
-              const SizedBox(height: 30), // ✅ Spacer ki jagah SizedBox
+              const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  // Handle pay now
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          OrderSuccessScreen(invoiceId: '3ds'),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

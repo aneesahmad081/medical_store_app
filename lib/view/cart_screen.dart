@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:medical_store_app/View/checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
-  final Map<String, dynamic>? product; // ✅ make product optional
+  final Map<String, dynamic>? product;
 
   const CartScreen({super.key, this.product});
 
@@ -24,7 +25,10 @@ class _CartScreenState extends State<CartScreen> {
         backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         title: Row(
           children: [
@@ -63,7 +67,6 @@ class _CartScreenState extends State<CartScreen> {
             ),
             const SizedBox(height: 12),
 
-            // ✅ First Cart Item (from product if available, otherwise default)
             cartItem(
               widget.product?["image"] ?? "https://i.ibb.co/4PN9d6D/bottle.png",
               widget.product?["name"] ?? "Sugar free gold",
