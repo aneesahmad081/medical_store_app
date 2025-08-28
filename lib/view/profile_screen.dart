@@ -1,7 +1,59 @@
 import 'package:flutter/material.dart';
 
+/// ✅ Example placeholder screens (you can replace with your own)
+class EditProfileScreen extends StatelessWidget {
+  const EditProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Edit Profile")),
+      body: const Center(child: Text("Edit Profile Screen")),
+    );
+  }
+}
+
+class MyOrdersScreen extends StatelessWidget {
+  const MyOrdersScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("My Orders")),
+      body: const Center(child: Text("Orders Screen")),
+    );
+  }
+}
+
+class BillingScreen extends StatelessWidget {
+  const BillingScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Billing")),
+      body: const Center(child: Text("Billing Screen")),
+    );
+  }
+}
+
+class FaqScreen extends StatelessWidget {
+  const FaqScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("FAQ")),
+      body: const Center(child: Text("FAQ Screen")),
+    );
+  }
+}
+
+/// ✅ Profile Screen
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final String userName; // 👈 Pass username dynamically
+
+  const ProfileScreen({super.key, required this.userName});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +83,7 @@ class ProfileScreen extends StatelessWidget {
                   const CircleAvatar(
                     radius: 30,
                     backgroundImage: NetworkImage(
-                      "https://via.placeholder.com/150", // replace with user photo
+                      'https://plus.unsplash.com/premium_photo-1689568126014-06fea9d5d341?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D',
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -39,19 +91,19 @@ class ProfileScreen extends StatelessWidget {
                   // Name + subtitle
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
-                        "Hi, User",
-                        style: TextStyle(
+                        "Hi, $userName", // 👈 Dynamic User Name
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        "Welcome to  Nilkanth Medical Store",
-                        style: TextStyle(fontSize: 13, color: Colors.grey),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "Welcome to Anees Medical Store",
+                        style: TextStyle(fontSize: 13, color: Colors.black),
                       ),
                     ],
                   ),
@@ -60,11 +112,31 @@ class ProfileScreen extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              // ✅ Menu Options
-              buildMenuItem(Icons.person_outline, "Edit Profile"),
-              buildMenuItem(Icons.list_alt_outlined, "My orders"),
-              buildMenuItem(Icons.access_time, "Billing"),
-              buildMenuItem(Icons.help_outline, "Faq"),
+              // ✅ Menu Items
+              buildMenuItem(
+                context,
+                Icons.person_outline,
+                "Edit Profile",
+                const EditProfileScreen(),
+              ),
+              buildMenuItem(
+                context,
+                Icons.list_alt_outlined,
+                "My Orders",
+                const MyOrdersScreen(),
+              ),
+              buildMenuItem(
+                context,
+                Icons.access_time,
+                "Billing",
+                const BillingScreen(),
+              ),
+              buildMenuItem(
+                context,
+                Icons.help_outline,
+                "FAQ",
+                const FaqScreen(),
+              ),
             ],
           ),
         ),
@@ -72,8 +144,13 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  /// ✅ Reusable Widget for Menu
-  Widget buildMenuItem(IconData icon, String title) {
+  /// ✅ Reusable Widget for Menu with Navigation
+  Widget buildMenuItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    Widget screen,
+  ) {
     return Column(
       children: [
         ListTile(
@@ -85,7 +162,10 @@ class ProfileScreen extends StatelessWidget {
           ),
           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
           onTap: () {
-            // TODO: Navigate to screens
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => screen),
+            );
           },
         ),
         Divider(color: Colors.grey.shade300, height: 1),

@@ -22,11 +22,11 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   late final List<Widget> _screens = [
-    _homeContent(), // 👈 Yehi aapka original UI
+    _homeContent(),
     const NotificationsScreen(),
     const Scannerscreen(),
     const CartScreen(),
-    const ProfileScreen(),
+    const ProfileScreen(userName: ''),
   ];
 
   @override
@@ -117,11 +117,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       Row(
-                        children: const [
-                          Icon(
-                            Icons.notifications_none,
-                            color: Colors.white,
-                            size: 24,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NotificationsScreen(),
+                                ),
+                              );
+                            },
+                            child: Icon(
+                              Icons.notifications_none,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                           ),
                           SizedBox(width: 12),
                           Icon(
