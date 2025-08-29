@@ -51,7 +51,7 @@ class FaqScreen extends StatelessWidget {
 
 /// ✅ Profile Screen
 class ProfileScreen extends StatelessWidget {
-  final String userName; // 👈 Pass username dynamically
+  final String userName;
 
   const ProfileScreen({super.key, required this.userName});
 
