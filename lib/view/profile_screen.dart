@@ -76,7 +76,6 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // ✅ Profile Header
               Row(
                 children: [
                   // Profile Image
