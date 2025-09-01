@@ -1,54 +1,58 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-// If you want Firebase upload:
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:medical_store_app/view/profile_screen.dart';
+class EditProfileScreen extends StatelessWidget {
+  const EditProfileScreen({super.key});
 
-class ProfileScreen extends StatefulWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Edit Profile")),
+      body: const Center(child: Text("Edit Profile Screen")),
+    );
+  }
+}
+
+class MyOrdersScreen extends StatelessWidget {
+  const MyOrdersScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("My Orders")),
+      body: const Center(child: Text("Orders Screen")),
+    );
+  }
+}
+
+class BillingScreen extends StatelessWidget {
+  const BillingScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Billing")),
+      body: const Center(child: Text("Billing Screen")),
+    );
+  }
+}
+
+class FaqScreen extends StatelessWidget {
+  const FaqScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("FAQ")),
+      body: const Center(child: Text("FAQ Screen")),
+    );
+  }
+}
+
+/// ✅ Profile Screen
+class ProfileScreen extends StatelessWidget {
   final String userName;
 
   const ProfileScreen({super.key, required this.userName});
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  File? _imageFile;
-  String? _profileImageUrl;
-
-  get pickImage => null; // For Firebase Storage URL
-
-  Future<void> _pickImage(dynamic FirebaseStorage) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
-
-      // ✅ OPTIONAL: Upload to Firebase Storage
-      final storageRef = FirebaseStorage.instance.ref().child(
-        "profile_pics/${DateTime.now().millisecondsSinceEpoch}.jpg",
-      );
-
-      await storageRef.putFile(_imageFile!);
-      String downloadUrl = await storageRef.getDownloadURL();
-
-      setState(() {
-        _profileImageUrl = downloadUrl;
-      });
-
-      // ✅ Save URL to Firestore (example: users collection)
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc("USER_ID") // replace with actual logged-in user ID
-          .update({"profilePic": downloadUrl});
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ✅ Title
               const Text(
                 "My Profile",
                 style: TextStyle(
@@ -70,46 +75,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ✅ Profile picture with upload option
               Row(
                 children: [
-                  Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundImage: _imageFile != null
-                            ? FileImage(_imageFile!)
-                            : _profileImageUrl != null
-                            ? NetworkImage(_profileImageUrl!)
-                            : const NetworkImage(
-                                'https://via.placeholder.com/150',
-                              ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: InkWell(
-                          onTap: pickImage,
-                          child: const CircleAvatar(
-                            radius: 15,
-                            backgroundColor: Colors.blue,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundImage: NetworkImage(
+                      'https://plus.unsplash.com/premium_photo-1689568126014-06fea9d5d341?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D',
+                    ),
                   ),
                   const SizedBox(width: 12),
 
+                  // Name + subtitle
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Hi, ${widget.userName}",
+                        "Hi, $userName", // 👈 Dynamic User Name
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -128,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               const SizedBox(height: 30),
 
-              // ✅ Your menu items remain the same
+              // ✅ Menu Items
               buildMenuItem(
                 context,
                 Icons.person_outline,
@@ -160,6 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// ✅ Reusable Widget for Menu with Navigation
   Widget buildMenuItem(
     BuildContext context,
     IconData icon,
