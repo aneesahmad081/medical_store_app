@@ -1,16 +1,5 @@
 import 'package:flutter/material.dart';
-
-class EditProfileScreen extends StatelessWidget {
-  const EditProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Edit Profile")),
-      body: const Center(child: Text("Edit Profile Screen")),
-    );
-  }
-}
+import 'package:medical_store_app/View/edit_profile_screen.dart';
 
 class MyOrdersScreen extends StatelessWidget {
   const MyOrdersScreen({super.key});
