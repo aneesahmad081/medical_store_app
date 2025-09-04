@@ -35,7 +35,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              // Profile picture
               Center(
                 child: Stack(
                   children: [
