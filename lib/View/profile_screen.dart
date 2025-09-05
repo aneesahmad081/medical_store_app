@@ -1,43 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:medical_store_app/View/billing_screen.dart';
 import 'package:medical_store_app/View/edit_profile_screen.dart';
+import 'package:medical_store_app/View/faq_screen.dart';
+import 'package:medical_store_app/View/orders_screen.dart';
 
-class MyOrdersScreen extends StatelessWidget {
-  const MyOrdersScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("My Orders")),
-      body: const Center(child: Text("Orders Screen")),
-    );
-  }
-}
-
-class BillingScreen extends StatelessWidget {
-  const BillingScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Billing")),
-      body: const Center(child: Text("Billing Screen")),
-    );
-  }
-}
-
-class FaqScreen extends StatelessWidget {
-  const FaqScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("FAQ")),
-      body: const Center(child: Text("FAQ Screen")),
-    );
-  }
-}
-
-/// ✅ Profile Screen
 class ProfileScreen extends StatelessWidget {
   final String userName;
 
@@ -115,13 +81,13 @@ class ProfileScreen extends StatelessWidget {
                 context,
                 Icons.access_time,
                 "Billing",
-                const BillingScreen(),
+                const BillingScreen(cartItems: []),
               ),
               buildMenuItem(
                 context,
                 Icons.help_outline,
                 "FAQ",
-                const FaqScreen(),
+                const FAQScreen(),
               ),
             ],
           ),
