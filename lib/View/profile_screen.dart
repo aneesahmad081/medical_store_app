@@ -40,12 +40,11 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
 
-                  // Name + subtitle
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Hi, $userName", // 👈 Dynamic User Name
+                        "Hi, $userName",
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -64,7 +63,6 @@ class ProfileScreen extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              // ✅ Menu Items
               buildMenuItem(
                 context,
                 Icons.person_outline,
