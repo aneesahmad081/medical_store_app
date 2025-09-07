@@ -19,7 +19,6 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ✅ Title
               const Text(
                 "My Profile",
                 style: TextStyle(
