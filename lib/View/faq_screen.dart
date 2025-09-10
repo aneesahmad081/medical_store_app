@@ -37,7 +37,7 @@ class FAQScreen extends StatelessWidget {
               final faq = faqs[index].data() as Map<String, dynamic>;
 
               return Card(
-                elevation: 2,
+                elevation: 10,
                 margin: const EdgeInsets.symmetric(vertical: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

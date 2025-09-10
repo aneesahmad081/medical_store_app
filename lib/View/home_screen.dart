@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final List<Widget> _screens = [
     _homeContent(),
     const NotificationsScreen(),
-    const Scannerscreen(),
+    const ScannerScreen(),
     const CartScreen(),
     const ProfileScreen(userName: ''),
   ];
@@ -59,7 +59,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔹 Header
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
@@ -74,7 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -134,12 +132,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white,
                                 size: 24,
                               ),
-                            ),
-                            SizedBox(width: 12),
-                            Icon(
-                              Icons.mail_outline,
-                              color: Colors.white,
-                              size: 24,
                             ),
                           ],
                         ),
