@@ -7,7 +7,6 @@ import 'package:medical_store_app/View/ProductDetailsScreen.dart'
     show ProductDetailsScreen;
 import 'package:medical_store_app/View/ScannerScreen.dart';
 import 'package:medical_store_app/View/cart_screen.dart' show CartScreen;
-
 import 'package:medical_store_app/View/profile_screen.dart' show ProfileScreen;
 
 class HomeScreen extends StatefulWidget {
@@ -20,6 +19,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final user = FirebaseAuth.instance.currentUser;
   int _currentIndex = 0;
+
+  final TextEditingController _searchController = TextEditingController();
+  String searchQuery = "";
 
   late final List<Widget> _screens = [
     _homeContent(),
@@ -78,11 +80,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Row(
                         children: [
-                          const CircleAvatar(
-                            radius: 20,
-                            backgroundImage: NetworkImage(
-                              'https://i.pravatar.cc/150?img=3',
-                            ),
+                          StreamBuilder<DocumentSnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(user!.uid)
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const CircleAvatar(
+                                  radius: 20,
+                                  backgroundImage: NetworkImage(
+                                    'https://i.pravatar.cc/150?img=3',
+                                  ),
+                                );
+                              }
+                              final data =
+                                  snapshot.data!.data()
+                                      as Map<String, dynamic>?;
+                              final imageUrl =
+                                  data?['profilePic'] ??
+                                  'https://i.pravatar.cc/150?img=3';
+                              return CircleAvatar(
+                                radius: 20,
+                                backgroundImage: NetworkImage(imageUrl),
+                              );
+                            },
                           ),
                           const SizedBox(width: 10),
                           Column(
@@ -106,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 'Welcome to Anees Medical Store',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   color: Colors.white,
                                 ),
                               ),
@@ -123,11 +145,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => NotificationsScreen(),
+                                    builder: (context) =>
+                                        const NotificationsScreen(),
                                   ),
                                 );
                               },
-                              child: Icon(
+                              child: const Icon(
                                 Icons.notifications_none,
                                 color: Colors.white,
                                 size: 24,
@@ -139,15 +162,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Search bar
+
+                  // 🔹 Search bar (fixed)
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(30),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const TextField(
-                      decoration: InputDecoration(
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() {
+                          searchQuery = value.toLowerCase().trim();
+                        });
+                      },
+                      decoration: const InputDecoration(
                         hintText: 'Search Medicine & Healthcare products',
                         border: InputBorder.none,
                         icon: Icon(Icons.search),
@@ -279,10 +309,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   final docs = snapshot.data!.docs;
+
+                  // 🔹 Local search filtering
+                  final filteredDocs = docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final name = (data['name'] ?? "").toString().toLowerCase();
+                    return name.contains(searchQuery);
+                  }).toList();
+
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: docs.length,
+                    itemCount: filteredDocs.length,
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
@@ -291,7 +329,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisSpacing: 12,
                         ),
                     itemBuilder: (context, index) {
-                      final data = docs[index].data() as Map<String, dynamic>;
+                      final data =
+                          filteredDocs[index].data() as Map<String, dynamic>;
                       final name = data['name'] ?? "Product";
                       final price = (data['price'] ?? 0).toDouble();
                       final rating = (data['rating'] ?? 0.0).toDouble();
@@ -306,7 +345,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         rating,
                         stock,
                         data,
-                        docs[index].id,
+                        filteredDocs[index].id,
                       );
                     },
                   );

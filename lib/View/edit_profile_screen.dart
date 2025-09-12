@@ -1,4 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -13,6 +18,89 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+
+  File? _profileImage;
+  final ImagePicker _picker = ImagePicker();
+
+  String? _imageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  /// Load current user data from Firestore
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        _nameController.text = data['name'] ?? '';
+        _emailController.text = data['email'] ?? '';
+        _phoneController.text = data['phone'] ?? '';
+        _imageUrl = data.containsKey('imageUrl') ? data['imageUrl'] : null;
+        setState(() {});
+      }
+    }
+  }
+
+  /// Pick new profile image
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  /// Save profile to Firestore + Firebase Storage
+  Future<void> _saveProfile() async {
+    if (_formKey.currentState!.validate()) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        String? imageUrl = _imageUrl;
+
+        // Upload new image if selected
+        if (_profileImage != null) {
+          try {
+            final ref = FirebaseStorage.instance
+                .ref()
+                .child("profile_pics")
+                .child("${user.uid}.jpg");
+
+            await ref.putFile(_profileImage!);
+
+            // always get a fresh URL
+            imageUrl = await ref.getDownloadURL();
+          } catch (e) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("Image upload failed: $e")));
+          }
+        }
+
+        // Update Firestore
+        await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
+          "name": _nameController.text.trim(),
+          "email": _emailController.text.trim(),
+          "phone": _phoneController.text.trim(),
+          "imageUrl": imageUrl,
+        }, SetOptions(merge: true));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile Updated Successfully!")),
+        );
+
+        Navigator.pop(context, true); // go back with updated data
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +120,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Center(
                 child: Stack(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 50,
-                      backgroundImage: AssetImage(
-                        "assets/profile.png",
-                      ), // add your image
+                      backgroundImage: _profileImage != null
+                          ? FileImage(_profileImage!)
+                          : (_imageUrl != null && _imageUrl!.isNotEmpty)
+                          ? NetworkImage(_imageUrl!)
+                          : const AssetImage("assets/profile.png")
+                                as ImageProvider,
+                      onBackgroundImageError: (_, __) {
+                        setState(() {
+                          _imageUrl = null; // fallback if broken URL
+                        });
+                      },
                     ),
                     Positioned(
                       bottom: 0,
@@ -45,9 +141,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         backgroundColor: Colors.blue,
                         child: IconButton(
                           icon: const Icon(Icons.edit, color: Colors.white),
-                          onPressed: () {
-                            // TODO: handle image change
-                          },
+                          onPressed: _pickImage,
                         ),
                       ),
                     ),
@@ -56,7 +150,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Name
+              // Full Name
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -108,14 +202,5 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
     );
-  }
-
-  void _saveProfile() {
-    if (_formKey.currentState!.validate()) {
-      // You can call Firebase/Backend API here to update profile
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profile Updated Successfully!")),
-      );
-    }
   }
 }

@@ -12,7 +12,7 @@ class MyOrdersScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("My Orders"),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.indigo,
         centerTitle: true,
       ),
       body: user == null

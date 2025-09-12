@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 class BillingScreen extends StatefulWidget {
   final List<Map<String, dynamic>> cartItems;
-  // Example: [{name: "Paracetamol", qty: 2, price: 200}, {name: "Vitamin C", qty: 1, price: 300}]
 
   const BillingScreen({super.key, required this.cartItems});
 
@@ -15,7 +14,7 @@ class BillingScreen extends StatefulWidget {
 class _BillingScreenState extends State<BillingScreen> {
   double subtotal = 0;
   double tax = 0;
-  double deliveryFee = 100; // flat fee
+  double deliveryFee = 100;
   double total = 0;
 
   @override

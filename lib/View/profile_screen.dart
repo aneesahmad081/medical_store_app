@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:medical_store_app/View/billing_screen.dart';
 import 'package:medical_store_app/View/edit_profile_screen.dart';
@@ -31,12 +33,36 @@ class ProfileScreen extends StatelessWidget {
 
               Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundImage: NetworkImage(
-                      'https://plus.unsplash.com/premium_photo-1689568126014-06fea9d5d341?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D',
-                    ),
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(FirebaseAuth.instance.currentUser!.uid)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const CircleAvatar(
+                          radius: 30,
+                          backgroundImage: AssetImage("assets/profile.png"),
+                        );
+                      }
+
+                      final data =
+                          snapshot.data!.data() as Map<String, dynamic>?;
+
+                      // 🔹 Use the SAME field name as EditProfileScreen ("imageUrl")
+                      final imageUrl = data?['imageUrl'];
+
+                      return CircleAvatar(
+                        radius: 30,
+                        backgroundImage:
+                            (imageUrl != null && imageUrl.isNotEmpty)
+                            ? NetworkImage(imageUrl)
+                            : const AssetImage("assets/profile.png")
+                                  as ImageProvider,
+                      );
+                    },
                   ),
+
                   const SizedBox(width: 12),
 
                   Column(
