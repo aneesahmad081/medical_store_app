@@ -176,7 +176,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Phone
               TextFormField(
                 controller: _phoneController,
                 decoration: const InputDecoration(
