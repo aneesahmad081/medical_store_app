@@ -82,7 +82,7 @@ class ProductDetailsScreen extends StatelessWidget {
           backgroundColor: Colors.white,
           appBar: AppBar(
             elevation: 0,
-            backgroundColor: Colors.white,
+            backgroundColor: Colors.indigo,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () => Navigator.pop(context),
@@ -157,14 +157,6 @@ class ProductDetailsScreen extends StatelessWidget {
                     ),
                     const Spacer(),
                     ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CartScreen(product: product),
-                          ),
-                        );
-                      },
                       icon: const Icon(Icons.add_shopping_cart),
                       label: const Text("Add to cart"),
                       style: ElevatedButton.styleFrom(
@@ -173,6 +165,44 @@ class ProductDetailsScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                      onPressed: () async {
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user == null) return;
+
+                        final cartRef = FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(user.uid)
+                            .collection('cart');
+
+                        // ✅ Check if product already in cart
+                        final existing = await cartRef
+                            .where('name', isEqualTo: product['name'])
+                            .limit(1)
+                            .get();
+
+                        if (existing.docs.isNotEmpty) {
+                          // Update quantity
+                          final doc = existing.docs.first;
+                          final currentQty = doc['quantity'] ?? 1;
+                          await doc.reference.update({
+                            'quantity': currentQty + 1,
+                          });
+                        } else {
+                          // Add new product
+                          await cartRef.add({
+                            'name': product['name'],
+                            'price': product['price'],
+                            'image': product['image'],
+                            'quantity': 1,
+                            'createdAt': FieldValue.serverTimestamp(),
+                          });
+                        }
+
+                        // ✅ Show success message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Added to cart")),
+                        );
+                      },
                     ),
                   ],
                 ),

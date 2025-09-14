@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _homeContent(),
     const NotificationsScreen(),
     const ScannerScreen(),
-    const CartScreen(),
+    const CartScreen(product: {}),
     const ProfileScreen(userName: ''),
   ];
 

@@ -107,6 +107,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Profile"),
+        backgroundColor: Colors.indigo,
         actions: [
           IconButton(icon: const Icon(Icons.save), onPressed: _saveProfile),
         ],

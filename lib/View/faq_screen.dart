@@ -9,7 +9,7 @@ class FAQScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("FAQs"),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.indigo,
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -37,7 +37,7 @@ class FAQScreen extends StatelessWidget {
               final faq = faqs[index].data() as Map<String, dynamic>;
 
               return Card(
-                elevation: 10,
+                elevation: 2,
                 margin: const EdgeInsets.symmetric(vertical: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
