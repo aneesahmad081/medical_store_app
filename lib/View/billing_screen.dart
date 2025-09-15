@@ -3,15 +3,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class BillingScreen extends StatefulWidget {
-  final List<Map<String, dynamic>> cartItems;
+  final List<Map<String, dynamic>> cartItems; // Real selected products
 
-  const BillingScreen({super.key, required this.cartItems});
+  const BillingScreen({
+    super.key,
+    required this.cartItems,
+    required List productIds,
+  });
 
   @override
   State<BillingScreen> createState() => _BillingScreenState();
 }
 
 class _BillingScreenState extends State<BillingScreen> {
+  late List<Map<String, dynamic>> cartItems;
   double subtotal = 0;
   double tax = 0;
   double deliveryFee = 100;
@@ -20,11 +25,12 @@ class _BillingScreenState extends State<BillingScreen> {
   @override
   void initState() {
     super.initState();
+    cartItems = widget.cartItems;
     _calculateBill();
   }
 
   void _calculateBill() {
-    subtotal = widget.cartItems.fold(
+    subtotal = cartItems.fold(
       0,
       (sum, item) => sum + (item["price"] * item["qty"]),
     );
@@ -35,30 +41,36 @@ class _BillingScreenState extends State<BillingScreen> {
 
   Future<void> _confirmOrder() async {
     final user = FirebaseAuth.instance.currentUser;
-
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please login to place an order")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please login first")));
       return;
     }
 
-    await FirebaseFirestore.instance.collection("orders").add({
-      "userId": user.uid,
-      "medicines": widget.cartItems,
-      "subtotal": subtotal,
-      "tax": tax,
-      "deliveryFee": deliveryFee,
-      "total": total,
-      "status": "Pending",
-      "date": DateTime.now().toIso8601String(),
-    });
+    try {
+      // Save order to Firestore
+      await FirebaseFirestore.instance.collection("orders").add({
+        "userId": user.uid,
+        "medicines": cartItems, // real products with qty & price
+        "subtotal": subtotal,
+        "tax": tax,
+        "deliveryFee": deliveryFee,
+        "total": total,
+        "status": "Pending",
+        "date": FieldValue.serverTimestamp(),
+      });
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Order placed successfully!")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Order placed successfully!")),
+      );
 
-    Navigator.pop(context); // Go back after order
+      Navigator.pop(context); // go back after order
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error placing order: $e")));
+    }
   }
 
   @override
@@ -73,18 +85,44 @@ class _BillingScreenState extends State<BillingScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Medicines List
+            // Cart Items
             Expanded(
               child: ListView.builder(
-                itemCount: widget.cartItems.length,
+                itemCount: cartItems.length,
                 itemBuilder: (context, index) {
-                  final item = widget.cartItems[index];
+                  final item = cartItems[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     child: ListTile(
                       title: Text(item["name"]),
-                      subtitle: Text("Qty: ${item["qty"]}"),
-                      trailing: Text("${item["price"] * item["qty"]} PKR"),
+                      subtitle: Row(
+                        children: [
+                          Text("Qty: ${item["qty"]}"),
+                          const SizedBox(width: 20),
+                          // Buttons to increase/decrease quantity
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline),
+                            onPressed: () {
+                              setState(() {
+                                if (item["qty"] > 1) item["qty"]--;
+                                _calculateBill();
+                              });
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add_circle_outline),
+                            onPressed: () {
+                              setState(() {
+                                item["qty"]++;
+                                _calculateBill();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      trailing: Text(
+                        "${(item["price"] * item["qty"]).toStringAsFixed(2)} PKR",
+                      ),
                     ),
                   );
                 },
@@ -106,7 +144,7 @@ class _BillingScreenState extends State<BillingScreen> {
 
             const SizedBox(height: 20),
 
-            // Confirm Button
+            // Confirm Order Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

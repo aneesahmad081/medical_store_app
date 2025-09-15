@@ -104,7 +104,7 @@ class ProfileScreen extends StatelessWidget {
                 context,
                 Icons.access_time,
                 "Billing",
-                const BillingScreen(cartItems: []),
+                const BillingScreen(cartItems: [], productIds: []),
               ),
               buildMenuItem(
                 context,

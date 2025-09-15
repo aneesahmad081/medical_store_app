@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class MyOrdersScreen extends StatelessWidget {
   const MyOrdersScreen({super.key});
@@ -32,7 +33,7 @@ class MyOrdersScreen extends StatelessWidget {
                   return const Center(
                     child: Text(
                       "No orders found",
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   );
                 }
@@ -44,49 +45,91 @@ class MyOrdersScreen extends StatelessWidget {
                   itemCount: orders.length,
                   itemBuilder: (context, index) {
                     final order = orders[index].data() as Map<String, dynamic>;
+                    final medicines = (order["medicines"] as List)
+                        .cast<String>();
+
+                    // ✅ Safely handle Timestamp or String
+                    DateTime orderDate;
+                    if (order["date"] is Timestamp) {
+                      orderDate = (order["date"] as Timestamp).toDate();
+                    } else if (order["date"] is String) {
+                      orderDate =
+                          DateTime.tryParse(order["date"]) ?? DateTime.now();
+                    } else {
+                      orderDate = DateTime.now();
+                    }
+
+                    final formattedDate = DateFormat(
+                      "dd MMM yyyy, hh:mm a",
+                    ).format(orderDate);
 
                     return Card(
-                      elevation: 3,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      elevation: 5,
+                      margin: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.teal.shade100,
-                          child: const Icon(
-                            Icons.local_pharmacy,
-                            color: Colors.teal,
-                          ),
-                        ),
-                        title: Text(
-                          (order["medicines"] as List).join(", "),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Order ID: ${orders[index].id}"),
-                            Text("Date: ${order["date"]}"),
-                            Text("Price: ${order["price"]}"),
-                          ],
-                        ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor(order["status"]),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            order["status"],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
+                            // Medicines List
+                            Text(
+                              "Medicines: ${medicines.join(", ")}",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 8),
+
+                            // Order ID + Date
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Order ID: ${orders[index].id}",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                Text(
+                                  formattedDate,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Price + Status
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Total: Rs ${order["price"]}",
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Chip(
+                                  label: Text(
+                                    order["status"],
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: _getStatusColor(
+                                    order["status"],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     );
