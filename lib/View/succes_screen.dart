@@ -18,19 +18,18 @@ class OrderSuccessScreen extends StatelessWidget {
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Small Confetti Dots
                   SizedBox(
                     height: 120,
                     width: 120,
                     child: CustomPaint(painter: ConfettiPainter()),
                   ),
-                  // Circle with Check
+
                   Container(
                     height: 90,
                     width: 90,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Color(0xFF4F46E5), // Indigo/Blue
+                      color: Color(0xFF4F46E5),
                     ),
                     child: const Icon(
                       Icons.check,
