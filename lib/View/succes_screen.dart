@@ -41,7 +41,7 @@ class OrderSuccessScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
 
-              // ✅ Thank You Text
+              
               const Text(
                 "Thank you",
                 style: TextStyle(
