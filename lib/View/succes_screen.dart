@@ -41,7 +41,6 @@ class OrderSuccessScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
 
-              
               const Text(
                 "Thank you",
                 style: TextStyle(
@@ -105,7 +104,6 @@ class OrderSuccessScreen extends StatelessWidget {
   }
 }
 
-/// ✅ Painter to create confetti dots
 class ConfettiPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
