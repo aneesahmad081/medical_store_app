@@ -52,7 +52,6 @@ class OrderSuccessScreen extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              // ✅ Subtitle with invoice
               Text.rich(
                 TextSpan(
                   text: "Your Order will be delivered with invoice ",
