@@ -10,7 +10,6 @@ class CartScreen extends StatelessWidget {
 
   String get userId => FirebaseAuth.instance.currentUser!.uid;
 
-  /// 🧮 Helper: Calculate totals
   double _getOrderTotal(List<QueryDocumentSnapshot> docs) {
     return docs.fold(0.0, (sum, doc) {
       final data = doc.data() as Map<String, dynamic>;
