@@ -176,7 +176,6 @@ class CartScreen extends StatelessWidget {
                                 ),
                               ),
 
-                              /// Quantity Buttons
                               Row(
                                 children: [
                                   IconButton(
@@ -201,7 +200,6 @@ class CartScreen extends StatelessWidget {
                                 ],
                               ),
 
-                              /// Delete Button
                               IconButton(
                                 icon: const Icon(
                                   Icons.delete,
@@ -217,7 +215,6 @@ class CartScreen extends StatelessWidget {
                   ),
                 ),
 
-                /// 📊 Payment Summary
                 Card(
                   margin: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
