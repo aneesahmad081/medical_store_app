@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:medical_store_app/View/checkout_screen.dart';
+import 'package:medical_store_app/View/home_screen.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key, required Map<String, dynamic> product});
@@ -63,7 +64,12 @@ class CartScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          },
         ),
         title: Text(
           "My Cart",

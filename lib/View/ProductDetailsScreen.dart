@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:medical_store_app/View/billing_screen.dart';
+
 import 'package:medical_store_app/View/cart_screen.dart';
 import 'package:medical_store_app/View/checkout_screen.dart';
 
@@ -22,40 +22,97 @@ class ProductDetailsScreen extends StatelessWidget {
     required String userEmail,
   });
 
-  Future<void> addToCart(
+  /// ✅ Add Rating (update average in product doc)
+  Future<void> addRating(
     BuildContext context,
-    Map<String, dynamic> product,
+    String productId,
+    double rating,
   ) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please login to add items to cart")),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please login to rate this product")),
+        );
+      }
       return;
     }
 
     try {
-      await FirebaseFirestore.instance
-          .collection("carts")
-          .doc(user.uid)
-          .collection("items")
-          .doc(productId)
-          .set({
-            "productId": productId,
-            "name": product["name"],
-            "price": product["price"],
-            "imageUrl": product["imageUrl"],
-            "quantity": FieldValue.increment(1),
-            "addedAt": FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
+      final productRef = FirebaseFirestore.instance
+          .collection("products")
+          .doc(productId);
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Product added to cart")));
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(productRef);
+        if (!snapshot.exists) return;
+
+        final data = snapshot.data() as Map<String, dynamic>;
+        double oldRating = (data["rating"] ?? 0).toDouble();
+        int oldCount = (data["reviewsCount"] ?? 0).toInt();
+
+        double newRating = ((oldRating * oldCount) + rating) / (oldCount + 1);
+
+        transaction.update(productRef, {
+          "rating": newRating,
+          "reviewsCount": oldCount + 1,
+        });
+      });
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Thanks for rating!")));
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
+
+  /// ✅ Add Review (in subcollection)
+  Future<void> addReview(
+    BuildContext context,
+    String productId,
+    String review,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please login to add review")),
+        );
+      }
+      return;
+    }
+
+    try {
+      final reviewRef = FirebaseFirestore.instance
+          .collection("products")
+          .doc(productId)
+          .collection("reviews");
+
+      await reviewRef.add({
+        "userId": user.uid,
+        "userName": user.email ?? "Anonymous",
+        "review": review,
+        "createdAt": FieldValue.serverTimestamp(),
+      });
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Review added")));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
     }
   }
 
@@ -88,11 +145,23 @@ class ProductDetailsScreen extends StatelessWidget {
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () => Navigator.pop(context),
             ),
-            actions: const [
-              Icon(Icons.notifications_none, color: Colors.black),
-              SizedBox(width: 16),
-              Icon(Icons.shopping_cart_outlined, color: Colors.black),
-              SizedBox(width: 16),
+            actions: [
+              const SizedBox(width: 16),
+              IconButton(
+                icon: const Icon(
+                  Icons.shopping_cart_outlined,
+                  color: Colors.black,
+                ),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CartScreen(product: product),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 16),
             ],
           ),
           body: SingleChildScrollView(
@@ -175,21 +244,18 @@ class ProductDetailsScreen extends StatelessWidget {
                             .doc(user.uid)
                             .collection('cart');
 
-                        // ✅ Check if product already in cart
                         final existing = await cartRef
                             .where('name', isEqualTo: product['name'])
                             .limit(1)
                             .get();
 
                         if (existing.docs.isNotEmpty) {
-                          // Update quantity
                           final doc = existing.docs.first;
                           final currentQty = doc['quantity'] ?? 1;
                           await doc.reference.update({
                             'quantity': currentQty + 1,
                           });
                         } else {
-                          // Add new product
                           await cartRef.add({
                             'name': product['name'],
                             'price': product['price'],
@@ -199,10 +265,11 @@ class ProductDetailsScreen extends StatelessWidget {
                           });
                         }
 
-                        // ✅ Show success message
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Added to cart")),
-                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Added to cart")),
+                          );
+                        }
                       },
                     ),
                   ],
@@ -228,7 +295,7 @@ class ProductDetailsScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Expiry Date: ${product["expiryDate"] ?? "N/A"}",
+                      "Expiry Date: ${product["expiryDate"] != null ? (product["expiryDate"] as Timestamp).toDate().toString().split(" ")[0] : "N/A"}",
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                     Text(
@@ -248,11 +315,11 @@ class ProductDetailsScreen extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                /// Rating
+                /// Average Rating
                 Row(
                   children: [
                     Text(
-                      (product["rating"] ?? 0).toString(),
+                      (product["rating"] ?? 0).toStringAsFixed(1),
                       style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -263,49 +330,149 @@ class ProductDetailsScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text("${product["reviewsCount"] ?? 0} Reviews"),
+                Text("${product["reviewsCount"] ?? 0} Ratings"),
 
                 const SizedBox(height: 20),
 
-                /// Reviews Section (real-time from subcollection)
-                const Text(
-                  "Reviews",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                /// ✅ Give Rating Button
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.star_rate),
+                  label: const Text("Give Rating"),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) {
+                        double rating = 3.0;
+
+                        return AlertDialog(
+                          title: const Text("Rate this product"),
+                          content: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(5, (index) {
+                              return StatefulBuilder(
+                                builder: (context, setState) {
+                                  return IconButton(
+                                    icon: Icon(
+                                      index < rating
+                                          ? Icons.star
+                                          : Icons.star_border,
+                                      color: Colors.orange,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        rating = index + 1.0;
+                                      });
+                                    },
+                                  );
+                                },
+                              );
+                            }),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(dialogContext);
+                              },
+                              child: const Text("Cancel"),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                addRating(context, productId, rating);
+                                Navigator.pop(dialogContext);
+                              },
+                              child: const Text("Submit"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
                 ),
+
+                const SizedBox(height: 30),
+
+                /// ✅ Reviews Section
+                const Text(
+                  "Customer Reviews",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+
+                /// Show Reviews
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection("products")
                       .doc(productId)
                       .collection("reviews")
-                      .orderBy("date", descending: true)
+                      .orderBy("createdAt", descending: true)
                       .snapshots(),
                   builder: (context, reviewSnapshot) {
                     if (!reviewSnapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
+
                     if (reviewSnapshot.data!.docs.isEmpty) {
-                      return const Text("No reviews yet");
+                      return const Text("No reviews yet.");
                     }
+
                     return Column(
                       children: reviewSnapshot.data!.docs.map((doc) {
                         final review = doc.data() as Map<String, dynamic>;
                         return ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Colors.blue,
-                            child: Icon(Icons.person, color: Colors.white),
-                          ),
+                          leading: const Icon(Icons.person),
                           title: Text(review["userName"] ?? "Anonymous"),
-                          subtitle: Text(review["comment"] ?? ""),
-                          trailing: Text(
-                            review["date"] != null
-                                ? (review["date"] as Timestamp)
-                                      .toDate()
-                                      .toString()
-                                      .substring(0, 10)
-                                : "",
-                          ),
+                          subtitle: Text(review["review"] ?? ""),
                         );
                       }).toList(),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 10),
+
+                /// Add Review Button
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.rate_review),
+                  label: const Text("Write a Review"),
+                  onPressed: () {
+                    final reviewController = TextEditingController();
+
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) {
+                        return AlertDialog(
+                          title: const Text("Write a Review"),
+                          content: TextField(
+                            controller: reviewController,
+                            maxLines: 3,
+                            decoration: const InputDecoration(
+                              hintText: "Enter your review",
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(dialogContext);
+                              },
+                              child: const Text("Cancel"),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (reviewController.text.isNotEmpty) {
+                                  addReview(
+                                    context,
+                                    productId,
+                                    reviewController.text,
+                                  );
+                                }
+                                Navigator.pop(dialogContext);
+                              },
+                              child: const Text("Submit"),
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
                 ),

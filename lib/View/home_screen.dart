@@ -61,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 🔹 Header
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
@@ -163,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 🔹 Search bar (fixed)
+                  // 🔹 Search bar
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -190,57 +191,49 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 20),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Top Categories',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 90,
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('categories')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final docs = snapshot.data!.docs;
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: docs.length,
-                    itemBuilder: (context, index) {
-                      final data = docs[index].data() as Map<String, dynamic>;
-                      Color categoryColor = Colors.blue;
-                      try {
-                        String colorString = data['color'];
-                        if (colorString.startsWith('#')) {
-                          categoryColor = Color(
-                            int.parse('0xFF${colorString.substring(1)}'),
-                          );
-                        } else {
-                          categoryColor = Color(int.parse(colorString));
-                        }
-                      } catch (_) {}
-                      return categoryItem(
-                        data['name'] ?? "Category",
-                        categoryColor,
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
+            // // 🔹 Top Categories
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 16),
+            //   child: Text(
+            //     'Top Categories',
+            //     style: GoogleFonts.poppins(
+            //       fontSize: 16,
+            //       fontWeight: FontWeight.w600,
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(height: 12),
 
+            // SizedBox(
+            //   height: 90,
+            //   child: StreamBuilder<QuerySnapshot>(
+            //     stream: FirebaseFirestore.instance
+            //         .collection('categories')
+            //         .snapshots(),
+            //     builder: (context, snapshot) {
+            //       if (!snapshot.hasData) {
+            //         return const Center(child: CircularProgressIndicator());
+            //       }
+            //       final docs = snapshot.data!.docs;
+            //       return ListView.builder(
+            //         scrollDirection: Axis.horizontal,
+            //         padding: const EdgeInsets.symmetric(horizontal: 16),
+            //         itemCount: docs.length,
+            //         itemBuilder: (context, index) {
+            //           final data = docs[index].data() as Map<String, dynamic>;
+            //           return categoryItem(
+            //             data['name'] ?? "Category",
+            //             data['icon'] ??
+            //                 'https://via.placeholder.com/60?text=No+Icon',
+            //           );
+            //         },
+            //       );
+            //     },
+            //   ),
+            // ),
             const SizedBox(height: 20),
 
+            // 🔹 Banner
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ClipRRect(
@@ -359,8 +352,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// 🔹 Category Widget
-  Widget categoryItem(String title, Color color) {
+  /// 🔹 Category Widget (corrected)
+  Widget categoryItem(String title, String iconUrl) {
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: Column(
@@ -368,7 +361,18 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             height: 60,
             width: 60,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+            ),
+            child: ClipOval(
+              child: Image.network(
+                iconUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.category, size: 30, color: Colors.grey),
+              ),
+            ),
           ),
           const SizedBox(height: 6),
           Text(title, style: GoogleFonts.poppins(fontSize: 12)),
