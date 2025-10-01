@@ -255,7 +255,8 @@ class CartScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const CheckoutScreen(),
+                          builder: (_) =>
+                              const CheckoutScreen(productId: '', name: null),
                         ),
                       );
                     },

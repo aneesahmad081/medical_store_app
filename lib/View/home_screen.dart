@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late final List<Widget> _screens = [
     _homeContent(),
-    const NotificationsScreen(),
+    const NotificationsScreen(userId: ''),
     const ScannerScreen(),
     const CartScreen(product: {}),
     const ProfileScreen(userName: ''),
@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const NotificationsScreen(),
+                                        const NotificationsScreen(userId: ''),
                                   ),
                                 );
                               },

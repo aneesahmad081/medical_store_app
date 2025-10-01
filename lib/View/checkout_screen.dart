@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:medical_store_app/View/succes_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  const CheckoutScreen({super.key});
+  const CheckoutScreen({super.key, required String productId, required name});
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();

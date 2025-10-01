@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medical_store_app/view/home_screen.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
   final String invoiceId;
@@ -80,7 +81,10 @@ class OrderSuccessScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context); // Go back to Home or Orders
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomeScreen()),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4F46E5),
@@ -90,7 +94,7 @@ class OrderSuccessScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text(
-                    "Continue Order",
+                    "Back To Home",
                     style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
