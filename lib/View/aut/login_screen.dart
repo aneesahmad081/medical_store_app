@@ -124,7 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 SizedBox(height: size.height * 0.025),
 
-                // Email
                 buildTextField(
                   controller: emailController,
                   hint: 'Enter your email',
