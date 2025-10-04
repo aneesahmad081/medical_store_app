@@ -22,7 +22,6 @@ class ProductDetailsScreen extends StatelessWidget {
     required String userEmail,
   });
 
-  /// ✅ Add Rating (update average in product doc)
   Future<void> addRating(
     BuildContext context,
     String productId,
