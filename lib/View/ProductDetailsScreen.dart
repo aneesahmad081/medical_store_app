@@ -72,7 +72,6 @@ class ProductDetailsScreen extends StatelessWidget {
     }
   }
 
-  /// ✅ Add Review (in subcollection)
   Future<void> addReview(
     BuildContext context,
     String productId,
